@@ -422,7 +422,10 @@
 </head>
 <body>
   <div class="video-layer" aria-hidden="true">
-    <video id="bgVideo" src="assets/usa.visse.mp4" autoplay loop playsinline preload="auto"></video>
+    <video id="bgVideo" autoplay muted loop playsinline preload="auto">
+      <source src="./assets/usa.visse.mp4" type="video/mp4">
+      <source src="https://raw.githubusercontent.com/Viniwayne69/hazelinkusavisse/main/assets/usa.visse.mp4" type="video/mp4">
+    </video>
   </div>
 
   <header class="brand-lockup" aria-label="Usa Visse">
@@ -547,6 +550,7 @@
     let dragging = false;
     let isOpen = false;
     let soundEnabled = false;
+    const rawVideoSrc = "https://raw.githubusercontent.com/Viniwayne69/hazelinkusavisse/main/assets/usa.visse.mp4";
 
     const soundOffSvg = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line>';
     const soundOnSvg = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M16 9.5c.8.7 1.2 1.5 1.2 2.5s-.4 1.8-1.2 2.5"></path><path d="M19 7c1.5 1.4 2.3 3.1 2.3 5s-.8 3.6-2.3 5"></path>';
@@ -568,6 +572,14 @@
         setSoundState(false);
         try { await video.play(); } catch (silentError) {}
       }
+    }
+
+    function useRawVideoFallback() {
+      if (video.dataset.fallback === "raw") return;
+      video.dataset.fallback = "raw";
+      video.src = rawVideoSrc;
+      video.load();
+      playVideo();
     }
 
     async function enableSound() {
@@ -633,8 +645,13 @@
     }
 
     setSoundState(false);
-    video.muted = false;
+    video.muted = true;
     playVideo();
+
+    video.addEventListener("error", useRawVideoFallback);
+    setTimeout(() => {
+      if (!video.readyState || video.videoWidth === 0) useRawVideoFallback();
+    }, 2600);
 
     soundBtn.addEventListener("click", async (event) => {
       event.stopPropagation();
