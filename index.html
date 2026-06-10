@@ -622,7 +622,8 @@
       isOpen ? panel.classList.add("open") : panel.classList.remove("open");
     }
 
-    function onStart(y) {
+    function onStart(y, target) {
+      if (target && target.closest("a, button")) return;
       startY = y;
       lastY = y;
       dragging = true;
@@ -667,18 +668,22 @@
     }, 2600);
 
     soundBtn.addEventListener("click", async (event) => {
+      event.preventDefault();
       event.stopPropagation();
       setSoundState(!soundEnabled);
       await playVideo();
     });
 
+    soundBtn.addEventListener("touchstart", (event) => event.stopPropagation(), { passive: true });
+    soundBtn.addEventListener("mousedown", (event) => event.stopPropagation());
+
     handle.addEventListener("click", () => isOpen ? closePanel() : openPanel());
 
-    document.addEventListener("touchstart", (event) => onStart(event.touches[0].clientY), { passive: true });
+    document.addEventListener("touchstart", (event) => onStart(event.touches[0].clientY, event.target), { passive: true });
     document.addEventListener("touchmove", (event) => { event.preventDefault(); onMove(event.touches[0].clientY); }, { passive: false });
     document.addEventListener("touchend", onEnd);
 
-    document.addEventListener("mousedown", (event) => onStart(event.clientY));
+    document.addEventListener("mousedown", (event) => onStart(event.clientY, event.target));
     document.addEventListener("mousemove", (event) => { if (dragging) onMove(event.clientY); });
     document.addEventListener("mouseup", onEnd);
     document.addEventListener("mouseleave", onEnd);
